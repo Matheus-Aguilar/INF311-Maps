@@ -25,6 +25,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -36,7 +37,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final LatLng NATAL = new LatLng(-16.374775, -40.537228);
     private final LatLng VICOSA = new LatLng(-20.753199, -42.878001);
     private final LatLng DPI = new LatLng(-20.764993, -42.868467);
+
     private LatLng ATUAL = new LatLng(0.0, 0.0);
+    private Marker markerAtual = null;
 
     public final int LOCATION_PERMISSION = 1;
 
@@ -87,7 +90,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(DPI, 16));
                 break;
             case "atual":
-                mMap.addMarker(new MarkerOptions().position(ATUAL).title("Localização Atual")
+                if(markerAtual != null)
+                    markerAtual.remove();
+                markerAtual = mMap.addMarker(new MarkerOptions().position(ATUAL).title("Localização Atual")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ATUAL, 16));
 
