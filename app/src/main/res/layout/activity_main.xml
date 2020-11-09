@@ -6,4 +6,34 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Minha casa na cidade natal"
+            android:tag="cidadeNatal"
+            android:onClick="abreMapa"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Minha casa em Viçosa"
+            android:tag="casaVicosa"
+            android:onClick="abreMapa"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Meu departamento"
+            android:tag="departamento"
+            android:onClick="abreMapa"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fechar aplicação"
+            android:onClick="fechar"/>
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
