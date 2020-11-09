@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +29,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.util.concurrent.locks.ReadWriteLock;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener{
 
     private GoogleMap mMap;
 
@@ -38,8 +41,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final LatLng VICOSA = new LatLng(-20.753199, -42.878001);
     private final LatLng DPI = new LatLng(-20.764993, -42.868467);
 
-    private LatLng ATUAL = new LatLng(0.0, 0.0);
+    private LatLng ATUAL;
     private Marker markerAtual = null;
+
+    private LocationManager lm;
+    private Criteria criteria;
+    private String provider;
+    private int REQ_TIME_LATLONG = 5000;
+    private int DIST_MIN = 0;
 
     public final int LOCATION_PERMISSION = 1;
 
@@ -49,11 +58,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         local = getIntent().getStringExtra("local");
 
+        lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        criteria = new Criteria();
+
+        PackageManager pm = getPackageManager();
+        boolean hasGPS = pm.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS);
+
+        if(hasGPS){
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        }
+        else{
+            criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        }
+
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+
+        provider = lm.getBestProvider(criteria, true);
+
+        if(provider == null){
+            Toast.makeText(this, "Provedor não encontrado", Toast.LENGTH_LONG);
+        }
+        else{
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED)
+                lm.requestLocationUpdates(provider, REQ_TIME_LATLONG, DIST_MIN, this);
+        }
+    }
+
+    @Override
+    protected void onDestroy(){
+        lm.removeUpdates(this);
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLocationChanged(Location location){
+        if(location != null){
+            ATUAL = new LatLng(location.getLatitude(), location.getLongitude());
+        }
     }
 
     /**
@@ -113,17 +164,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void localizacaoAtual(View view){
         requestLocationPermission();
+
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-
-            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            String provider = LocationManager.NETWORK_PROVIDER;
-
-            Location loc = lm.getLastKnownLocation(provider);
-
-            ATUAL = new LatLng(loc.getLatitude(), loc.getLongitude());
+                == PackageManager.PERMISSION_GRANTED && ATUAL != null) {
             local = "atual";
-
             atualizaMapa();
         }
     }
